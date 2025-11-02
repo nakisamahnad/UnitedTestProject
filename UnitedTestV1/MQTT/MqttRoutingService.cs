@@ -24,10 +24,14 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
     private readonly MqttPool _clientPool = new MqttPool();
     
     private readonly Guid _instanceId;
+    
+    private readonly int _maxClients;
 
-    public MqttRoutingService(Guid instanceId)
+    public MqttRoutingService(Guid instanceId,
+        int maxClients)
     {
         _instanceId = instanceId;
+        _maxClients = maxClients;
     }
 
 
@@ -38,23 +42,18 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
     /// <param name="stoppingToken"></param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        for (var counter = 0; counter < 10; counter++)
+        for (var counter = 0; counter < _maxClients; counter++)
         {
-            var id = Guid.NewGuid();
-
             var connector = await AwsIotCertConnector.ConnectAsync(_instanceId,
                 counter);
 
             var client = connector.client;
             _clientPool.AddClients(client);
 
-            
-
-
             client.ConnectedAsync += async e =>
             {
                 
-                Console.Write("MQTT connected: {ResultCode} for {Id}");
+                //Console.Write("MQTT connected: {ResultCode} for {Id}");
 
 
                 /*
@@ -75,6 +74,13 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
                     cancellationToken: stoppingToken);
                 await client.SubscribeAsync(sharedHandshake, MqttQualityOfServiceLevel.AtLeastOnce,
                     cancellationToken: stoppingToken);*/
+                
+                
+                var sharedSavePrinters =
+                    $"{MqttKeys.Share}/{_instanceId}/{NsPrefix}/{MqttKeys.PrintServiceClient}/{_instanceId}/{MqttKeys.Command}/{MqttKeys.Printers}/{MqttKeys.Remove}";
+                
+                await client.SubscribeAsync(sharedSavePrinters, MqttQualityOfServiceLevel.AtLeastOnce,
+                    cancellationToken: stoppingToken);
             };
 
             client.ApplicationMessageReceivedAsync += async e =>
@@ -87,6 +93,8 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
                     var payload = e.ApplicationMessage.ConvertPayloadToString();
                     var parts = topic.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
+                    
+                    Console.WriteLine("Received MQTT message on topic: {Topic} with {Payload}", topic, payload);
                     
                 }
                 catch (Exception ex)
@@ -166,6 +174,35 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
         var msg = new MqttApplicationMessageBuilder()
             .WithTopic(topic)
             .WithPayload(JsonConvert.SerializeObject(model))
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .WithRetainFlag(false)
+            .Build();
+
+        var result = await client.PublishAsync(msg, CancellationToken.None);
+
+
+        return corr;
+    }
+
+    public async Task<string> SendHeartBeat(Guid cuppsId,CU_HeartBeat heartBeat)
+    {
+        var client = _clientPool.GetClient();
+
+        if (client is not { IsConnected: true })
+            throw new InvalidOperationException("MQTT client is not connected.");
+        
+        var corr = Guid.NewGuid().ToString("N");
+        
+        
+        string topic = "";
+
+        topic =
+            $"{NsPrefix}/{MqttKeys.PrintServiceClient}/{cuppsId}/{MqttKeys.Event}/{MqttKeys.Heartbeat}";
+        
+        
+        var msg = new MqttApplicationMessageBuilder()
+            .WithTopic(topic)
+            .WithPayload(JsonConvert.SerializeObject(heartBeat))
             .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
             .WithRetainFlag(false)
             .Build();

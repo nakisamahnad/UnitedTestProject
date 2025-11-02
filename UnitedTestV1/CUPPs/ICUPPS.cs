@@ -9,4 +9,6 @@ public interface ICUPPS
     
     
     public Task RemoveOneMqttClient();
+
+    public Guid GetId { get; }
 }

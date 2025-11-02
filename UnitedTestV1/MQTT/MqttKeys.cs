@@ -15,7 +15,8 @@ public class MqttKeys
     public static string Printers = "printers";
     public static string Heartbeat = "heartbeat";
     public static string Status = "status";
-    public static string Submit = "submit";
+    public const string Submit = "submit";
+    public const string Remove = "remove";
     public static string Handshake = "handshake";
     
     

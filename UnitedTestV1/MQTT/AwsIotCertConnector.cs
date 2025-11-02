@@ -23,8 +23,8 @@ public class AwsIotCertConnector
     public static async Task<(IMqttClient client, MqttClientOptions options)> ConnectAsync(Guid cuppsId,
         int channelId)
     {
-        var pfxPath = "/Users/parsa_manouchehrian/RiderProjects/UnitedTestV1/UnitedTestV1/MQTT/device.pfx";
-        var crtPath = "/Users/parsa_manouchehrian/RiderProjects/UnitedTestV1/UnitedTestV1/MQTT/root-CA.crt";
+        var pfxPath = "C:\\Users\\ParsaMann\\RiderProjects\\UnitedTestProject\\UnitedTestV1\\MQTT\\device.pfx";
+        var crtPath = "C:\\Users\\ParsaMann\\RiderProjects\\UnitedTestProject\\UnitedTestV1\\MQTT\\root-CA.crt";
         var pfxPassword = "123";
         
         if(pfxPath == null || pfxPassword == null || crtPath == null)
