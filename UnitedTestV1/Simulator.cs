@@ -59,7 +59,7 @@ public class Simulator
         
         // create a random number between 5-30 for mqtt clients
         var random = new Random();
-        var maxMqttClients = random.Next(5, 31);
+        var maxMqttClients = random.Next(1, 2);
         
         var host = CreateMqttHostAsync(cuppsId.Value,maxMqttClients);
         var task = host.RunAsync();

@@ -52,57 +52,22 @@ public class AwsIotCertConnector
         var tlsOptions = new MqttClientTlsOptions
         {
             UseTls = true,
-            SslProtocol = SslProtocols.Tls12,
-            ClientCertificatesProvider = new DefaultMqttCertificatesProvider(new List<X509Certificate> { deviceCert }),
-            CertificateValidationHandler = ctx =>
-            {
-                try
-                {
-                    using var chain = new X509Chain();
-                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                    // Allow system roots; add extra root if present
-                    chain.ChainPolicy.ExtraStore.Add(rootCa);
-                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-                    
-
-                    var serverCert2 = ctx.Certificate as X509Certificate2 ?? new X509Certificate2(ctx.Certificate);
-                    var ok = chain.Build(serverCert2);
-
-                    // If the only error is UntrustedRoot but it chains to our provided root, accept
-                    if (!ok &&
-                        chain.ChainStatus.Length == 1 &&
-                        chain.ChainStatus[0].Status == X509ChainStatusFlags.UntrustedRoot &&
-                        string.Equals(chain.ChainElements[^1].Certificate.Thumbprint, rootCa.Thumbprint, System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        ok = true;
-                    }
-
-                    if (!ok)
-                    {
-                        // Log chain errors for diagnostics
-                        foreach (var s in chain.ChainStatus)
-                            Console.WriteLine($"[TLS] {s.Status}: {s.StatusInformation}");
-                    }
-                    return ok;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[TLS] Validation exception: {ex.Message}");
-                    return false;
-                }
-            }
+            SslProtocol = SslProtocols.Tls12
+            //ClientCertificatesProvider = new DefaultMqttCertificatesProvider(new List<X509Certificate> { deviceCert }),
+            
         };
 
 
         var clientId = Create(cuppsId.ToString(), channelId);
         var options = new MqttClientOptionsBuilder()
             .WithClientId(clientId) // FOR NOW we can only use basicPubSub as client id
-            .WithTcpServer("ahxakebqwf8xf-ats.iot.us-east-1.amazonaws.com", 8883)
+            .WithTcpServer("mr-connection-qzscuk4gmj4.messaging.solace.cloud", 8883)
             .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
             .WithCleanSession(false)
             .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
             .WithReceiveMaximum(1000)
             .WithTlsOptions(tlsOptions)
+            .WithCredentials(username: "solace-cloud-client", password: "g7rhc0bkuu6nijf7pp20d5dbll")
             .Build();
 
 
