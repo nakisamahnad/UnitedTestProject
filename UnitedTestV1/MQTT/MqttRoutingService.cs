@@ -16,7 +16,7 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
 {
 
 
-    private string NsPrefix => $"abomis/" +
+    public const string NsPrefix = $"abomis/" +
                                $"local-test";
 
     private string SharedGroup => "test-client";
@@ -52,8 +52,25 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
 
             client.ConnectedAsync += async e =>
             {
-                
-                //Console.Write("MQTT connected: {ResultCode} for {Id}");
+                // send connection acknowledgement
+                string topic = "";
+
+                topic =
+                    $"{NsPrefix}/{MqttKeys.PrintServiceClient}/{_instanceId}/{MqttKeys.Aknowledge}/{MqttKeys.AWS_Presence_Connected}";
+
+                var model = new CU_Connected()
+                {
+                    ClientId = client.Options.ClientId
+                };
+
+                var msg = new MqttApplicationMessageBuilder()
+                    .WithTopic(topic)
+                    .WithPayload(JsonConvert.SerializeObject(model))
+                    .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+                    .WithRetainFlag(false)
+                    .Build();
+
+                var result = await client.PublishAsync(msg, CancellationToken.None);
 
 
                 /*
@@ -229,5 +246,12 @@ public class MqttRoutingService : BackgroundService, IMqttRoutingService
         client.Dispose();
         
         _clientPool.RemoveClient(client);
+    }
+
+    public async Task<List<string>> GetActiveClientIds()
+    {
+        var clients =  _clientPool.GetClients();
+        
+        return clients.Select(s=>s.Options.ClientId).ToList();
     }
 }

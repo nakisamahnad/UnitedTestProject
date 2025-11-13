@@ -6,9 +6,15 @@ public class MqttKeys
     
     
     public static string PrintServiceClient = "print-services";
+    public const string AWS_Presence_Connected = "connected";
+    
     
     public static string Event = "evt";
     public static string Command = "cmd";
+    public static string WILL = "will";
+    public const string Aknowledge = "ack";
+    
+        
     
     
     public static string Jobs = "jobs";

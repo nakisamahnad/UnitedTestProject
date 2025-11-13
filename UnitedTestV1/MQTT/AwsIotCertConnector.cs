@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Configuration;
 using MQTTnet;
+using MQTTnet.Protocol;
+using Newtonsoft.Json;
+using UnitedTestV1.Models;
 
 namespace UnitedTestV1.MQTT;
 
@@ -56,18 +59,41 @@ public class AwsIotCertConnector
             //ClientCertificatesProvider = new DefaultMqttCertificatesProvider(new List<X509Certificate> { deviceCert }),
             
         };
-
-
+        
         var clientId = Create(cuppsId.ToString(), channelId);
+        
+        
+        var topicWill =
+            $"{MqttRoutingService.NsPrefix}/{MqttKeys.PrintServiceClient}/{cuppsId}/{MqttKeys.WILL}";
+        
+        var willMessage = new MqttApplicationMessageBuilder()
+            .WithTopic(topicWill)   // LWT topic
+            .WithPayload(JsonConvert.SerializeObject(new
+            {
+                ClientId = clientId,
+                Status = "offline"
+            }))
+            .WithQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
+            .WithRetainFlag(false) 
+            .Build();
+
+
         var options = new MqttClientOptionsBuilder()
             .WithClientId(clientId) // FOR NOW we can only use basicPubSub as client id
             .WithTcpServer("mr-connection-qzscuk4gmj4.messaging.solace.cloud", 8883)
             .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
             .WithCleanSession(false)
             .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
-            .WithReceiveMaximum(1000)
+            .WithReceiveMaximum(10000)
             .WithTlsOptions(tlsOptions)
             .WithCredentials(username: "solace-cloud-client", password: "g7rhc0bkuu6nijf7pp20d5dbll")
+            .WithWillTopic(topicWill)
+            .WithWillPayload(JsonConvert.SerializeObject(new CU_Will
+            {
+                ClientId = clientId
+            }))
+            .WithWillRetain(false)
+            .WithWillQualityOfServiceLevel(MqttQualityOfServiceLevel.AtLeastOnce)
             .Build();
 
 

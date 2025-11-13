@@ -20,6 +20,7 @@ public class CUPPS : ICUPPS, IDisposable
 
     public List<Printers> Printers { get; set; } = new List<Printers>();
 
+
     
 
     public CUPPS(IMqttRoutingService mqttRoutingService,
@@ -84,6 +85,7 @@ public class CUPPS : ICUPPS, IDisposable
                 {
                     try
                     {
+                        //Console.WriteLine("Send heart beat!");
                         await SendHeartBeat();
                     }
                     catch (Exception ex)

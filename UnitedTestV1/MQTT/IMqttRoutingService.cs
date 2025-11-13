@@ -11,4 +11,7 @@ public interface IMqttRoutingService
     public Task<bool> MqttConnectionTest();
     
     public Task RemoveOneMqttClient();
+
+    public Task<List<string>> GetActiveClientIds();
+
 }

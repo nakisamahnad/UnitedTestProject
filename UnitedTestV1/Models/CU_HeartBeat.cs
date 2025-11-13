@@ -45,4 +45,6 @@ public class CU_HeartBeat
     /// The last status message from the workstation
     /// </summary>
     public string? Status { get; set; }
+
+    public List<string> Type { get; set; }
 }
