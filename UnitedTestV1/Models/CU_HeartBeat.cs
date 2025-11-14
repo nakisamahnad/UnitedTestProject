@@ -16,13 +16,13 @@ public class CU_HeartBeat
     /// Last reported CPU usage percentage of the workstation
     /// </summary>
     /// <example>10</example>
-    public decimal? LastCPU_Usage { get; set; }
+    public double? LastCPU_Usage { get; set; }
 
     /// <summary>
     /// Last reported RAM usage percentage of the workstation
     /// </summary>
     /// <example>10</example>
-    public decimal? LastRAM_Usage{ get; set; }
+    public double? LastRAM_Usage{ get; set; }
 
     /// <summary>
     /// Number of printers currently assigned to the workstation
@@ -46,5 +46,9 @@ public class CU_HeartBeat
     /// </summary>
     public string? Status { get; set; }
 
-    public List<string> Type { get; set; }
+
+    /// <summary>
+    /// List of the active mqtt connection ids
+    /// </summary>
+    public List<string> Connections { get; set; }
 }

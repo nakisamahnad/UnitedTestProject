@@ -51,6 +51,9 @@ public class CUPPS : ICUPPS, IDisposable
     {
         var currentTime = DateTime.UtcNow;
         var last24h = currentTime.AddHours(-24);
+
+        var clientIds = await _mqttRoutingService.GetActiveClientIds();
+        
         
         //send heartbeat message
         await _mqttRoutingService.SendHeartBeat(Id, new CU_HeartBeat()
@@ -60,10 +63,11 @@ public class CUPPS : ICUPPS, IDisposable
             FaultyPrinters = Printers.Count(s=>s.IsFaulty),
             Last24hJobs = Printers.Sum(s=>s.Jobs.Count(a=>a.IsSuccess
             && a.SubmitDateTime >= last24h && a.SubmitDateTime <= currentTime)),
-            LastCPU_Usage = new Faker().Random.Decimal(1, 100),
-            LastRAM_Usage = new Faker().Random.Decimal(1, 100),
+            LastCPU_Usage = new Faker().Random.Double(1, 100),
+            LastRAM_Usage = new Faker().Random.Double(1, 100),
             Status = "OK",
-            ts = new DateTimeOffset(currentTime).ToUnixTimeSeconds()
+            ts = new DateTimeOffset(currentTime).ToUnixTimeSeconds(),
+            Connections = clientIds 
         });
     }
     
