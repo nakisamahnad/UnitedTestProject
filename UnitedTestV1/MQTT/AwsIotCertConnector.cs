@@ -30,23 +30,7 @@ public class AwsIotCertConnector
         var crtPath = "C:\\Users\\ParsaMann\\RiderProjects\\UnitedTestProject\\UnitedTestV1\\MQTT\\root-CA.crt";
         var pfxPassword = "123";
         
-        if(pfxPath == null || pfxPassword == null || crtPath == null)
-        {
-            throw new ArgumentNullException("Environment variables for MQTT certificates are not set.");
-        }
-
-        if (!File.Exists(pfxPath) || !File.Exists(crtPath))
-        {
-            throw new FileNotFoundException("Mqtt certificate files not found.");
-        }
-
-        var deviceCert = new X509Certificate2(
-            pfxPath,
-            pfxPassword,
-            X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-        
-        var rootCa = new X509Certificate2(crtPath);
-        
+       
         
         var mqttFactory = new MqttClientFactory();
 
